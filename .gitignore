@@ -1,0 +1,26 @@
+# 환경 변수 파일
+.env
+
+# data 파일
+data/
+
+# macOS에서 자동 생성되는 시스템 파일
+.DS_Store
+
+# Python 캐시 및 빌드 파일
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebook 자동 저장 폴더
+.ipynb_checkpoints/
+
+# VS Code 설정 (개인 환경이므로 보통은 제외)
+.vscode/
+
+# 로그 파일
+*.log
