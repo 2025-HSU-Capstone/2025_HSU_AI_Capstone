@@ -1,3 +1,0 @@
-this is develop
-develop_1
-develop_2
