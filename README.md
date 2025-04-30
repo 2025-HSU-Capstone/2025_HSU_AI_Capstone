@@ -87,9 +87,6 @@ OPENAI_API_KEY=sk-xxxxxxx...
 
 ---
 
-문의: [heohyeonjun@yourdomain.com] (예시)
-
----
 
 🎉 **Enjoy Cooking with Smart AI!**
 
