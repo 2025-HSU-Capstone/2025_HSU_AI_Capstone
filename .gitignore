@@ -24,3 +24,9 @@ build/
 
 # 로그 파일
 *.log
+
+# 실행파일 (매번 실행할때마다 오류나서 만듦 씨발새끼)
+run_user_request.sh
+
+# ✅ 벡터 DB (Chroma)
+db/
