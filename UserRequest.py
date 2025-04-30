@@ -1,3 +1,6 @@
+from sentence_transformers import SentenceTransformer
+import chromadb
+from chromadb.utils import embedding_functions
 import os
 import pandas as pd
 from dotenv import load_dotenv
@@ -53,15 +56,43 @@ else:
         axis=1
     )]
 
+# ✅ RAG 준비: 벡터 DB에서 유사 레시피 검색
+# Load ChromaDB client and model
+rag_df = pd.read_csv("/Users/heohyeonjun/Desktop/AI_Capstone/2025_HSU_AI_Capstone/recipes1_rag_ready.csv")
+rag_df["document"] = rag_df["document"].astype(str)
+
+chroma_client = chromadb.Client()
+model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+embed_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
+
+# 컬렉션 초기화 및 임베딩
+collection = chroma_client.get_or_create_collection("recipes", embedding_function=embed_func)
+
+if collection.count() == 0:
+    documents = rag_df["document"].tolist()
+    ids = [f"recipe_{i}" for i in range(len(documents))]
+    collection.add(documents=documents, ids=ids)
+
+# 유사 레시피 검색 함수
+def retrieve_similar_recipes(query_ingredients, top_k=3):
+    query = ", ".join(query_ingredients)
+    results = collection.query(query_texts=[query], n_results=top_k)
+    return "\n\n".join(results["documents"][0])
+
 # ✅ 추천 레시피 생성
 
 def get_recipe(ingredients):
+    context = retrieve_similar_recipes(ingredients, top_k=3)
+
     prompt = f"""
     [상황]
     사용자 요청에 따라 아래 재료들을 사용하여 요리를 추천해야 합니다:
     - {', '.join(ingredients)}
 
-    위 재료들을 고려하여 현실적이고 맛있는 요리를 제안해주세요.
+    아래는 참고할 수 있는 유사 레시피입니다:
+    {context}
+
+    위 재료들과 유사 레시피를 참고하여 현실적이고 맛있는 요리를 제안해주세요.
     반드시 모든 재료를 하나의 요리에 억지로 넣지 않아도 됩니다. 
     상황에 따라 두 가지 이상의 요리를 제안해주셔도 좋습니다.
 
