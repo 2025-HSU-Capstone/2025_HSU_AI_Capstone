@@ -1,23 +1,19 @@
-from sentence_transformers import SentenceTransformer
-import chromadb
-from chromadb.utils import embedding_functions
+# --- user_request.py ---
+
 import os
 import pandas as pd
 from dotenv import load_dotenv
 from openai import OpenAI
 
-
 # ✅ 환경설정
-load_dotenv(dotenv_path="/Users/heohyeonjun/Desktop/AI_Capstone/2025_HSU_AI_Capstone/.env", override=True)
-# openai.api_key = os.getenv("OPENAI_API_KEY")
-# client = OpenAI(api_key=openai.api_key)
+load_dotenv(dotenv_path=".env", override=True)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # ✅ 데이터 로딩
-food_df = pd.read_csv("/Users/heohyeonjun/Desktop/AI_Capstone/2025_HSU_AI_Capstone/fooddataset.csv")
+food_df = pd.read_csv("data/fooddataset.csv")
 food_df.columns = food_df.columns.str.strip().str.replace(" ", "")
 
-# ✅ 사용자 요청 입력
+# ✅ 사용자 요청 입력 (외부에서 받는 방식으로 교체해도 됨)
 user_request = "오늘은 단백질이 포함된 음식을 먹어야겠어."
 
 # ✅ 조건 추출 프롬프트
@@ -34,7 +30,7 @@ prompt = f"""
 """
 
 # ✅ GPT 키워드 추출
-response = client.chat.completions.create(model="gpt-4o",
+response = client.chat.completions.create(model="gpt-4.1",
 messages=[
     {"role": "system", "content": "당신은 음식 조건 분석 전문가입니다."},
     {"role": "user", "content": prompt}
@@ -42,7 +38,6 @@ messages=[
 
 raw_keywords = response.choices[0].message.content.strip()
 keywords = [kw.strip() for kw in raw_keywords.split(",") if kw.strip()]
-print(f"\n🧠 정제된 조건 목록: {keywords}")
 
 # ✅ 식재료 필터링
 food_names = set(food_df["식재료"].str.strip().unique())
@@ -56,64 +51,13 @@ else:
         axis=1
     )]
 
-# ✅ RAG 준비: 벡터 DB에서 유사 레시피 검색
-# Load ChromaDB client and model
-rag_df = pd.read_csv("/Users/heohyeonjun/Desktop/AI_Capstone/2025_HSU_AI_Capstone/recipes1_rag_ready.csv")
-rag_df["document"] = rag_df["document"].astype(str)
-
-chroma_client = chromadb.Client()
-model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-embed_func = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-
-# 컬렉션 초기화 및 임베딩
-collection = chroma_client.get_or_create_collection("recipes", embedding_function=embed_func)
-
-if collection.count() == 0:
-    documents = rag_df["document"].tolist()
-    ids = [f"recipe_{i}" for i in range(len(documents))]
-    collection.add(documents=documents, ids=ids)
-
-# 유사 레시피 검색 함수
-def retrieve_similar_recipes(query_ingredients, top_k=3):
-    query = ", ".join(query_ingredients)
-    results = collection.query(query_texts=[query], n_results=top_k)
-    return "\n\n".join(results["documents"][0])
-
-# ✅ 추천 레시피 생성
-
-def get_recipe(ingredients):
-    context = retrieve_similar_recipes(ingredients, top_k=3)
-
-    prompt = f"""
-    [상황]
-    사용자 요청에 따라 아래 재료들을 사용하여 요리를 추천해야 합니다:
-    - {', '.join(ingredients)}
-
-    아래는 참고할 수 있는 유사 레시피입니다:
-    {context}
-
-    위 재료들과 유사 레시피를 참고하여 현실적이고 맛있는 요리를 제안해주세요.
-    반드시 모든 재료를 하나의 요리에 억지로 넣지 않아도 됩니다. 
-    상황에 따라 두 가지 이상의 요리를 제안해주셔도 좋습니다.
-
-    각 요리에는 [재료], [조리법]을 한국어로 포함해주세요.
-    """
-
-    response = client.chat.completions.create(
-        model='gpt-4-turbo',
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=700,
-        temperature=0.7,
-    )
-    return response.choices[0].message.content.strip()
-
-# ✅ 실행
+# ✅ 결과 저장
 if not filtered_df.empty:
     input_ingredients = filtered_df["식재료"].tolist()
     print(f"\n✅ 요청 조건에 맞는 식재료: {', '.join(input_ingredients)}")
-    print("\n✅ 추천 레시피:")
-    print(get_recipe(input_ingredients))
+
+    # 👉 이후 모듈(recipe_generator_rag.py 등)에서 불러쓸 수 있도록 저장
+    pd.DataFrame({"식재료": input_ingredients}).to_csv("data/filtered_ingredients.csv", index=False)
 else:
     print("\n⚠️ 해당 조건에 맞는 식재료가 없습니다.")
-
-
+    pd.DataFrame({"식재료": []}).to_csv("data/filtered_ingredients.csv", index=False)
