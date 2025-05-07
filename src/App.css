@@ -1,0 +1,56 @@
+/* 전체 컨테이너 */
+.app-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-family: 'Pretendard', sans-serif;
+  background-color: #f9f9f9;
+}
+
+/* 상단 헤더 */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* 버튼 묶음 */
+.actions button {
+  margin-left: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #4F46E5;
+  color: white;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.actions button:hover {
+  background-color: #4338ca;
+}
+
+/* 메인 레이아웃: 양분할 */
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+/* 좌우 섹션 스타일 */
+.left-panel,
+.right-panel {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+  width: 100%;
+  min-width: 400px;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

@@ -1,0 +1,32 @@
+.step-viewer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.step-viewer button {
+  background-color: transparent;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #4F46E5;
+  transition: opacity 0.2s ease;
+}
+
+.step-viewer button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.step-card {
+  width: 240px;
+  text-align: center;
+}
+
+.step-card img {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}
