@@ -1,7 +1,6 @@
-# --- recipe_generator_rag.py ---
-
 import os
 import pandas as pd
+import re
 from dotenv import load_dotenv
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
@@ -28,11 +27,68 @@ def retrieve_similar_recipes(query_ingredients, top_k=3):
     results = collection.query(query_texts=[query], n_results=top_k)
     return "\n\n".join(results["documents"][0])
 
+# ✅ HTML + base64 이미지 저장
+def generate_images_html(recipe_text, output_html="recipe_storyboard.html"):
+    steps = re.findall(r"[0-9]+\.\s*(.+)", recipe_text)
+    steps = [s.strip() for s in steps if len(s.strip()) > 5]
+
+    # print(f"\n🔥 추출된 스텝 수: {len(steps)}")
+    # print("📋 추출된 스텝 내용:", steps)
+
+    html_lines = [
+        "<html><head><meta charset='utf-8'><title>요리 스토리보드</title></head><body>",
+        "<h2>🍳 조리법 스토리보드</h2>"
+    ]
+
+    # ✅ 전체 스텝에 대해 이미지 생성
+    for idx, step in enumerate(steps, 1):
+        prompt = f"""
+        아래는 요리 레시피를 장면별로 표현한 스토리보드입니다.
+        이 그림은 모두 **동일한 작가**가 **같은 스타일**로 그린 연속된 장면이어야 합니다.
+
+        - 지금은 Step {idx}입니다.
+        - 동작: {step}
+        - 스타일: 따뜻하고 간단한 만화 스타일
+        - 동일한 주방 배경, 동일한 조리도구, 동일한 손 모양과 색상 사용
+        - 인물 없이 손 중심, **한 가지 동작만 표현**
+        - 전 스텝들과 연결된 느낌을 주는 **연속 장면 구성** (스토리보드 느낌)
+        - 그림체 일관성 유지 필수 (캐릭터/손/재료/기구 스타일 동일)
+        - 너무 복잡하지 않게, 요리 중인 장면만 한 컷으로 명확히
+
+        전체 조리법은 각 스텝마다 한 장면으로 표현되며, 이 Step {idx}도 그 시리즈 중 하나입니다.
+        """
+
+        try:
+            response = client.images.generate(
+                model="gpt-image-1",
+                prompt=prompt.strip(),
+                size="1024x1024",
+                n=1,
+            )
+            b64_image = response.data[0].b64_json
+        except Exception as e:
+            print(f"⚠️ Step {idx} 이미지 생성 실패: {type(e).__name__} - {e}")
+            b64_image = None
+
+        html_lines.append(f"<h4>Step {idx}: {step}</h4>")
+        if b64_image:
+            html_lines.append(
+                f"<img src='data:image/png;base64,{b64_image}' width='512' style='margin-bottom:20px;'>"
+            )
+        else:
+            html_lines.append("<p><i>이미지 생성 실패</i></p>")
+
+    html_lines.append("</body></html>")
+
+    with open(output_html, "w", encoding="utf-8") as f:
+        f.write("\n".join(html_lines))
+
+    print(f"📄 HTML 스토리보드 저장 완료 → {output_html}")
+
+
 # ✅ GPT로 레시피 생성
 def get_recipe(ingredients):
     context = retrieve_similar_recipes(ingredients, top_k=3)
-
-    # 길이 제한 조절용 (너무 긴 context 방지)
     if len(context) > 1500:
         context = context[:1500] + "..."
 
@@ -52,7 +108,7 @@ def get_recipe(ingredients):
     """
 
     response = client.chat.completions.create(
-        model="gpt-4.1",  # 최신 모델: GPT-4o
+        model="gpt-4o",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1200,
         temperature=0.7,
@@ -63,7 +119,10 @@ def get_recipe(ingredients):
 if ingredients:
     print(f"📥 입력된 식재료: {', '.join(ingredients)}")
     print("\n✅ 추천 레시피:")
-    print(get_recipe(ingredients))
+    recipe = get_recipe(ingredients)
+    print(recipe)
+
+    print("\n🖼️ 스토리보드 생성 중...")
+    generate_images_html(recipe)
 else:
     print("⚠️ 재료가 비어 있어 레시피 추천을 수행할 수 없습니다.")
-

@@ -14,7 +14,7 @@ food_df = pd.read_csv("data/fooddataset.csv")
 food_df.columns = food_df.columns.str.strip().str.replace(" ", "")
 
 # ✅ 사용자 요청 입력 (외부에서 받는 방식으로 교체해도 됨)
-user_request = "오늘은 단백질이 포함된 음식을 먹어야겠어."
+user_request = "오늘은 탄수화물이 풍부한 음식이 먹고싶어."
 
 # ✅ 조건 추출 프롬프트
 prompt = f"""
@@ -30,7 +30,7 @@ prompt = f"""
 """
 
 # ✅ GPT 키워드 추출
-response = client.chat.completions.create(model="gpt-4.1",
+response = client.chat.completions.create(model="gpt-4o",
 messages=[
     {"role": "system", "content": "당신은 음식 조건 분석 전문가입니다."},
     {"role": "user", "content": prompt}
