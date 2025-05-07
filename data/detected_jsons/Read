@@ -1,0 +1,11 @@
+모델이 생성한 JSON 저장	✅ FastAPI에서 자동 로드 가능
+
+
+✅ 지금은 test_inputs만 쓰다가
+🤖 나중에 모델이 detected_jsons에 자동 저장만 해도 연동 끝!
+
+
+✅ FastAPI 자동화 예시 흐름 (나중)
+1.모델이 data/detected_jsons/fridge_20250414_001.json 생성
+2.FastAPI가 주기적으로 or 이벤트 기반으로 이 디렉터리 감시
+3.새 파일 감지되면 → JSON 불러와서 DB에 자동 반영
