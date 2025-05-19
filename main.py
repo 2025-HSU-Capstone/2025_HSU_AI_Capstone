@@ -58,10 +58,11 @@ app.mount(
 
 # 신규 추가: 레시피 스텝 이미지용
 app.mount(
-    "/recipe-images",
-    CORSEnabledStaticFiles(directory=os.path.abspath("data/recipe_images")),
-    name="recipe-images"
+    "/recipe_images",
+    StaticFiles(directory=os.path.abspath("data/recipe_images")),
+    name="recipe_images"
 )
+
 
 # ✅ 라우터 등록
 app.include_router(detect_router)
@@ -72,14 +73,25 @@ app.include_router(trigger_router)
 print(f"📦 불러온 비밀번호 repr: {repr(settings.DB_PASSWORD)}")
 print("✅ FastAPI 앱 시작됨")
 
+from fastapi import Request
+from fastapi.responses import JSONResponse
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    print("🔥 예외 발생:", exc)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc)},
+    )
+
 # ✅ 루트 페이지 확인용
 @app.get("/")
 def read_root():
-    print("✅ 루트 라우터 실행됨")
+    print("루트 라우터 실행됨")
     return {"message": "FastAPI는 살아있음"}
 
 
-#http://127.0.0.1:8000/docs
+#http://127.0.0.1:8000/docs 
 #uvicorn main:app --reload
 
 #루트 페이지들 위미미

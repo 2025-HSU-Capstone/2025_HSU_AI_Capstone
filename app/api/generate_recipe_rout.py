@@ -26,17 +26,34 @@ from app.models.db_tables import Recipe, RecipeIngredient, RecipeImage, FoodItem
 from app.schemas.detect_swagger import RecipeRequest
 router = APIRouter()
 
+from fastapi.responses import FileResponse
+from fastapi import Request
+import os
+
+#Flask 연결
+import requests
 
 # 🔁 임시로 모델 역할을 해주는 함수 (모델 API 대신)
-def dummy_model_response(user_input: str,ingredients: list[str]) ->dict: #“이 함수는 dict 형태의 값을 반환한다” 라는 힌트(타입 힌트) 야
-    return {
-        "title": "감자계란전",
-        "ingredients": ingredients,
-        "steps": [
-            {"step": 1, "image_url": "/recipe-images/step1.png"},
-            {"step": 2, "image_url": "/recipe-images/step2.png"}
-        ]
-    }
+def dummy_model_response(user_input: str, ingredients: list[str]) -> dict:
+    if user_input == "단백질 많은 레시피 추천해줘":
+        return {
+            "title": "단백질 폭탄 오믈렛",
+            "ingredients": ingredients,
+            "steps": [
+                {"step": 1, "image_url": "/recipe_images/step1.png"},
+                {"step": 2, "image_url": "/recipe_images/step2.png"}
+            ]
+        }
+    else:
+        return {
+            "title": "기본 감자계란전",
+            "ingredients": ingredients,
+            "steps": [
+                {"step": 1, "image_url": "/recipe_images/step1.png"},
+                {"step": 2, "image_url": "/recipe_images/step2.png"}
+            ]
+        }
+
 
 #사용자 입력받고 버튼 누르면 레시피 반환하는 라우터
 @router.post("/generate_recipe") #그 변수의 이름 #클라이언트가 보낸 데이터 묶음"이라는 뜻으로 자주 써.
@@ -54,9 +71,23 @@ def generate_recipe_from_detected(payload: RecipeRequest,db: Session = Depends(g
             return {"message": "감지된 재료가 없습니다."}
 
         #더미모델 호출 #이 함수에는 db만 입력->나중에 사용자 입력도 같이 받음
-        gpt_response = dummy_model_response(user_input=user_input, ingredients=ingredient_names)  #requests.post("모델주소", json={"user_input": ..., "ingredients": ...})
-        print(" 더미 모델 응답:", gpt_response)
-
+        #  Flask 모델 서버로 요청 보내기
+        try:
+            flask_url = "http://localhost:5000/api/generate"
+            payload = {
+                "user_input": user_input,
+                "ingredients": ingredient_names
+            }
+            res = requests.post(flask_url, json=payload)
+            res.raise_for_status()
+            gpt_response = res.json()
+            print("📡 Flask 모델 응답:", gpt_response)
+            print("📡 Flask 상태코드:", res.status_code)
+        except Exception as e:
+            print("❌ Flask 모델 호출 실패:", e)
+            print("📡 Flask 상태코드:", res.status_code)
+            return {"error": "Flask 모델 호출 실패"}
+        
         # 레시피 저장
         recipe = Recipe(
             title=gpt_response["title"],
@@ -75,7 +106,7 @@ def generate_recipe_from_detected(payload: RecipeRequest,db: Session = Depends(g
         for step_data in gpt_response["steps"]:
             db.add(RecipeImage(
                 recipe_id=recipe.id,
-                step=step_data["step"],
+                step=step_data["text"],
                 image_url=step_data["image_url"]
             ))
 

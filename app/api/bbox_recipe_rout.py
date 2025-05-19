@@ -22,10 +22,16 @@ router = APIRouter()
 # 가장 최근 이미지에서 감지된 bbox 중에서
 # 입력한 재료 이름(target_names)에 해당하는 것만 필터링해서 반환
 def filter_bboxes_by_names(target_names: list[str], db: Session) -> list[dict]:
-    # 1. 가장 최근 냉장고 이미지 가져오기
-    latest_image = db.query(FridgeImage).order_by(FridgeImage.captured_at.desc()).first()
+    # 일단 1 고정
+    latest_image = db.query(FridgeImage).filter(
+            FridgeImage.filename == 'fridge_sample_01.jpg'
+        ).first()
     if not latest_image:
-        return []
+        return [], None
+    # # 1. 가장 최근 냉장고 이미지 가져오기
+    # latest_image = db.query(FridgeImage).order_by(FridgeImage.captured_at.desc()).first()
+    # if not latest_image:
+    #     return []
     
     print("📷 DB에서 가져온 이미지 파일명:", latest_image.filename)
 

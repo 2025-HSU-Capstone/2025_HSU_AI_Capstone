@@ -6,10 +6,11 @@
 #React ↔ FastAPI	프론트는 FastAPI에 요청만 하고, FastAPI는 이 모델을 이용해 DB에서 꺼냄
 
 
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, Float, String, DateTime, ForeignKey, Enum
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+from sqlalchemy import Text
 
 Base = declarative_base()
 
@@ -44,7 +45,7 @@ class RecipeImage(Base):
 
     id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey("recipes.id"))
-    step = Column(Integer)
+    step = Column(Text)
     image_url = Column(String(255))
 
     recipe = relationship("Recipe", back_populates="images")
@@ -91,9 +92,9 @@ class DetectedBBox(Base):
     id = Column(Integer, primary_key=True)
     image_id = Column(Integer, ForeignKey("fridge_images.id"))
     name = Column(String(100))
-    x1 = Column(Integer)
-    y1 = Column(Integer)
-    x2 = Column(Integer)
-    y2 = Column(Integer)
+    x1 = Column(Float)
+    y1 = Column(Float)
+    x2 = Column(Float)
+    y2 = Column(Float)
 
     image = relationship("FridgeImage", back_populates="bboxes")

@@ -12,10 +12,10 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class BBox(BaseModel):
-    x1: int
-    y1: int
-    x2: int
-    y2: int
+    x1: float
+    y1: float
+    x2: float
+    y2: float
 
 class DetectedItem(BaseModel):
     name: str

@@ -20,6 +20,7 @@ Base = declarative_base()
 #FastAPI에서 의존성 주입으로 Depends(get_db)로 쓰는 함수
 #요청마다 새로운 DB 세션을 만들고, 작업이 끝나면 finally로 안전하게 닫아줌
 def get_db():
+    print("💡 get_db() 실행됨") 
     db = SessionLocal() #DB에 연결할 수 있는 세션(연결 객체)을 하나 생성
     try:
         yield db #FastAPI가 이 함수를 호출한 라우터 함수에 이 db 세션을 넘겨줌

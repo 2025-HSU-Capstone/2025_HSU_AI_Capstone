@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Env
+.env
+
+# Logs
+*.log
+
+# Auto-generated recipe images
+data/recipe_images/
+
+
+# VSCode
+.vscode/
+
