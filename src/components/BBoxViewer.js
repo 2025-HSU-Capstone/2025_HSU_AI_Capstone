@@ -24,9 +24,10 @@ function BBoxViewer({ imageUrl, bboxes }) {
 
   useEffect(() => {
     updateScale(); // 첫 로드 시 실행
+    console.log("🧪 imageUrl:", imageUrl); // 컴포넌트 상단 useEffect에 추가
 
     const resizeObserver = new ResizeObserver(() => {
-      updateScale(); // 이미지가 리사이즈되면 scale 갱신
+      updateScale(); //npm 이미지np가 리사이즈되면 scale 갱신
     });
 
     if (imgRef.current) {
