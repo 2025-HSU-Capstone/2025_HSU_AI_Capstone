@@ -1,0 +1,57 @@
+# ✅ Python
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ✅ VSCode, PyCharm, 기타 IDE 설정
+.vscode/
+.idea/
+
+# ✅ OS 관련 파일
+.DS_Store
+Thumbs.db
+
+# ✅ 환경 파일 및 비밀 키
+.env
+*.env
+
+# ✅ 모델 데이터, DB, 캐시 파일 등
+db/
+data/
+outputs/
+*.sqlite
+*.db
+
+# ✅ Jupyter, Colab 파일 캐시
+.ipynb_checkpoints/
+
+# ✅ 임시 파일
+*.log
+*.bak
+*.swp
+*.tmp
+
+# ✅ Cloudinary 업로드 대상 이미지가 저장되는 로컬 폴더
+recipe-images/
+
+# 🧹 사용하지 않는 코드
+erase_chromadb.py
+query.py
+test_chroma_connection.py
+detection.py
+collection.py
+
+# 🧪 테스트/로그
+*.log
+
+# 전체 가상환경 폴더 무시
+AI_flask/
+Include/
+Lib/
+Scripts/
+share/
+pyvenv.cfg
+
