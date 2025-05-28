@@ -17,7 +17,11 @@ function RecipeStoryboard({ recipe }) {
           <div key={step.step} className="step-card">
             {step.image_url ? (
               <img
-                src={`http://localhost:8000${step.image_url}?v=${step.step}`}
+                src={
+                  step.image_url.startsWith("http")
+                    ? step.image_url
+                    : `http://localhost:8000${step.image_url}?v=${step.step}`
+                }
                 alt={`Step ${step.step}`}
                 onError={() =>
                   console.error("❌ 이미지 로딩 실패:", step.image_url)

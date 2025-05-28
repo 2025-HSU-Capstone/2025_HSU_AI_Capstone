@@ -3,6 +3,8 @@ import "./App.css";
 import React, { useState } from "react";
 import RecipeStoryboard from "./components/RecipeStoryboard";
 import BBoxViewer from "./components/BBoxViewer";
+import FridgeEditor from "./components/FridgeEditor";
+import FridgeSegOverlay from "./components/FridgeSegOverlay";
 
 function App() {
   const [recipe, setRecipe] = useState(null);
@@ -63,12 +65,24 @@ function App() {
         <section className="right-panel">
           {bboxData && (
             <BBoxViewer
-              imageUrl={`http://localhost:8000/images/${bboxData.image_filename}`}
+              imageUrl={
+                bboxData.image_filename.startsWith("http")
+                  ? bboxData.image_filename
+                  : `http://localhost:8000/images/${bboxData.image_filename}`
+              }
               bboxes={bboxData.bboxes}
             />
           )}
         </section>
       </main>
+      {/* ⬇ 여기 추가 */}
+      <FridgeEditor />
+
+      <section className="seg-panel">
+      <h2>🧪 SAM 기반 재료 감지</h2>
+      <FridgeSegOverlay />
+      </section>
+
     </div>
   );
 }

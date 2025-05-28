@@ -21,7 +21,7 @@
 }
 
 .step-card {
-  width: 240px;
+  width: 100%;
   text-align: center;
 }
 
@@ -30,6 +30,7 @@
   height: auto;
   border-radius: 10px;
 }
+
 .image-placeholder {
   width: 120px;
   height: 120px;
