@@ -10,7 +10,7 @@
 
 from flask import Blueprint, jsonify, request
 from recipe_model import generate_recipe_from_request
-# 게시피 모델 함수화 함수 
+# 레시피 모델 함수화 함수 
 generation_bp = Blueprint("generation", __name__)
 
 @generation_bp.route("/generate", methods=["POST"])
