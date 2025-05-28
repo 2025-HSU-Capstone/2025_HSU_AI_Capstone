@@ -5,6 +5,8 @@ from app.db.database import engine
 #Base.metadata.drop_all(bind=engine)
 
 # 다시 생성
-#Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 #모든 테이블의 행 삭제제
+
+# reset.py

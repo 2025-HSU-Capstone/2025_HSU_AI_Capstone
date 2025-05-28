@@ -98,3 +98,16 @@ class DetectedBBox(Base):
     y2 = Column(Float)
 
     image = relationship("FridgeImage", back_populates="bboxes")
+
+class DetectedMask(Base):
+    __tablename__ = "detected_masks"
+
+    id = Column(Integer, primary_key=True)
+    image_id = Column(Integer, ForeignKey("fridge_images.id"), nullable=False)
+    name = Column(String(100), nullable=False)
+    bbox_id = Column(Integer, ForeignKey("detected_bboxes.id"), nullable=False)  # YOLO 결과와 연결
+    mask_url = Column(String(255), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    image = relationship("FridgeImage")
+    bbox = relationship("DetectedBBox")

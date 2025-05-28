@@ -23,9 +23,7 @@ router = APIRouter()
 # 입력한 재료 이름(target_names)에 해당하는 것만 필터링해서 반환
 def filter_bboxes_by_names(target_names: list[str], db: Session) -> list[dict]:
     # 일단 1 고정
-    latest_image = db.query(FridgeImage).filter(
-            FridgeImage.filename == 'fridge_sample_01.jpg'
-        ).first()
+    latest_image = db.query(FridgeImage).order_by(FridgeImage.captured_at.desc()).first()
     if not latest_image:
         return [], None
     # # 1. 가장 최근 냉장고 이미지 가져오기
@@ -40,6 +38,12 @@ def filter_bboxes_by_names(target_names: list[str], db: Session) -> list[dict]:
         DetectedBBox.image_id == latest_image.id,
         DetectedBBox.name.in_(target_names)
     ).all()
+    print("🧊 이미지 ID:", latest_image.id)
+    print("🧂 레시피 재료 목록:", target_names)
+
+    # 디버깅용 감지된 전체 bbox 이름도 출력해보자
+    detected_all = db.query(DetectedBBox).filter(DetectedBBox.image_id == latest_image.id).all()
+    print("📦 감지된 bbox 이름 목록:", [b.name for b in detected_all])
 
     # 3. 필요한 정보만 딕셔너리 형태로 반환
     bboxes= [
@@ -66,7 +70,7 @@ def get_bbox_for_latest_recipe(db: Session = Depends(get_db)):
     # 2. 해당 레시피의 재료 목록 (가장최신레시피의 recipe_ingredint.name)
     ingredient_rows = db.query(RecipeIngredient).filter(RecipeIngredient.recipe_id == latest_recipe.id).all()
     ingredients_names = [row.name for row in ingredient_rows]
-
+    print("🧂 레시피 재료 목록:", ingredients_names)
     # 3. 필터 함수로 해당 재료의 bbox 좌표만 추출
     bboxes,image_filename= filter_bboxes_by_names(ingredients_names, db)
 

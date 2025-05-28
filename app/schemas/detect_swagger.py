@@ -20,14 +20,19 @@ class BBox(BaseModel):
 class DetectedItem(BaseModel):
     name: str
     bbox: BBox
+    mask_url: str | None = None  # <- SAM 마스크 URL 추가
 
 class DetectRequest(BaseModel):
     image_filename: str
     captured_at: datetime
     detected_items: list[DetectedItem]
 
+    model_config = {
+        "arbitrary_types_allowed": True  # ✅ DetectedItem 인스턴스 허용
+    }
+
 
 #요청 바디(json)을 파이선 객체로 바꿔줘야하는데 그걸 자동으로 구조화해주는 Pydantic의 BaseModel 클래스
 class RecipeRequest(BaseModel):
     user_input: str 
-    
+

@@ -17,6 +17,7 @@
 #   DB에 저장하고
 #   프론트에 다시 응답해줌
 
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from datetime import datetime
@@ -24,6 +25,7 @@ from datetime import datetime
 from app.db.database import get_db
 from app.models.db_tables import Recipe, RecipeIngredient, RecipeImage, FoodItem
 from app.schemas.detect_swagger import RecipeRequest
+
 router = APIRouter()
 
 from fastapi.responses import FileResponse
@@ -70,10 +72,9 @@ def generate_recipe_from_detected(payload: RecipeRequest,db: Session = Depends(g
         if not ingredient_names:
             return {"message": "감지된 재료가 없습니다."}
 
-        #더미모델 호출 #이 함수에는 db만 입력->나중에 사용자 입력도 같이 받음
         #  Flask 모델 서버로 요청 보내기
         try:
-            flask_url = "http://localhost:5000/api/generate"
+            flask_url = "http://localhost:5000/api/generate" #다른 노트북 서버로 변경경
             payload = {
                 "user_input": user_input,
                 "ingredients": ingredient_names

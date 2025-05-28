@@ -12,16 +12,21 @@
 
 print("✅ main.py 시작")
 
+import sys, os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))  # 지능시스템 루트 기준
+
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.staticfiles import StaticFiles
 from starlette.responses import FileResponse
-import os
 
-from app.api.detect_updateDB_rout import router as detect_router
 from app.api.generate_recipe_rout import router as generate_recipe_router
-from app.api.bbox_recipe_rout import router as bbox_router
+from app.api.bbox_recipe_rout import router as bbox_recipe_router
 from app.api.trigger_router import router as trigger_router
+from app.api.bbox_router import router as bbox_router
+from app.api.mask_router import router as mask_router
+from app.api.trigger import router as trigger
 
 from app.core import settings
 
@@ -65,10 +70,12 @@ app.mount(
 
 
 # ✅ 라우터 등록
-app.include_router(detect_router)
 app.include_router(generate_recipe_router)
 app.include_router(bbox_router)
+app.include_router(bbox_recipe_router)
 app.include_router(trigger_router)
+app.include_router(mask_router)
+app.include_router(trigger)
 
 print(f"📦 불러온 비밀번호 repr: {repr(settings.DB_PASSWORD)}")
 print("✅ FastAPI 앱 시작됨")

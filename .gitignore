@@ -1,18 +1,42 @@
-# Python
+# Python 캐시
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyd
 
-# Env
+# 가상환경
+venv/
+.venv/
+ENV/
+env/
+
+# IDE 설정
+.vscode/
+.idea/
+
+# 시스템 파일
+.DS_Store
+Thumbs.db
+
+# 환경 변수
 .env
 
-# Logs
+# 로그
 *.log
 
-# Auto-generated recipe images
+# 데이터 및 임시 결과
+data/captured_images/
 data/recipe_images/
+data/mask_images/
+data/test_inputs/
+data/detected_jsons/
+data/raw_images/ 
 
+# 기타
+*.db
+*.sqlite
 
-# VSCode
-.vscode/
+# 특정 파일 무시 (app/api 하위 파일)
+app/api/trigger_router.py
+app/api/detect_updateDB_rout.py
 
