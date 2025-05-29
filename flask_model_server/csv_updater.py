@@ -1,10 +1,10 @@
-# csv_updater.py
 import pandas as pd
 from datetime import datetime, timedelta
 import os
 from collections import Counter
+import json  # 🔑 추가됨
 
-# Rule 기반 맵핑
+# ✅ Rule 기반 맵핑
 NUTRITION_MAP = {
     "마늘": "탄수화물",
     "감자": "탄수화물",
@@ -21,19 +21,34 @@ EXPIRY_DAYS = {
     "양파": 15
 }
 
-def generate_fooddataset_from_json(json_data: dict, csv_path: str):
+CSV_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "data",
+    "fooddataset.csv"
+)
+
+def generate_fooddataset_from_json(json_data: dict, csv_path: str = CSV_PATH):
     captured_at = json_data.get("captured_at")
     capture_date = datetime.fromisoformat(captured_at)
 
-    items = json_data.get("detected_items", [])
+    raw_items = json_data.get("detected_items", [])
+
+    items = []
+    for item in raw_items:
+        if isinstance(item, str):
+            try:
+                item = json.loads(item)
+            except json.JSONDecodeError:
+                print("❌ JSON 디코딩 실패:", item)
+                continue
+        items.append(item)
+
     name_counts = Counter(item["name"] for item in items)
 
     rows = []
     for name, count in name_counts.items():
         nutrition = NUTRITION_MAP.get(name, "기타")
         expiry = capture_date + timedelta(days=EXPIRY_DAYS.get(name, 7))
-
-        # ✅ 수량 로직: 2번 감지 시 → 1, 1번 감지 시 → 1
         quantity = count / 2 if count >= 2 else 1
 
         rows.append({
