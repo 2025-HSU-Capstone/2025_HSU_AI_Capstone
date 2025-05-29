@@ -13,7 +13,6 @@ DB_PATH = "db/chroma"
 
 print("📦 데이터 로딩 중...")
 df = pd.read_csv(DATA_PATH)
-df = df[:5000]
 df["document"] = df["document"].astype(str)
 
 # ✅ 임베딩 함수 정의
@@ -41,4 +40,3 @@ if collection.count() == 0:
     print("✅ 벡터 DB 생성 완료!")
 else:
     print("✅ 기존 벡터 DB가 존재합니다. 건너뜁니다.")
-
