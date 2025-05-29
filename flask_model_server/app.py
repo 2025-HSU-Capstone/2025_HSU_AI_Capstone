@@ -12,3 +12,7 @@ def index():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)  # ✅ 외부 접근 허용
+
+
+
+# & "C:\Users\NPC-6\anaconda3\envs\yolov8\Scripts\ngrok.exe" http 5000
