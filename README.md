@@ -1,0 +1,101 @@
+# ❄️ 2025 HSU Intelligent Systems Capstone – 냉AI고 프로젝트
+
+**한성대학교 2025 지능시스템 캡스톤디자인 : AI로 진화한 스마트 냉장고 – 냉AI고 시스템**
+
+> 본 프로젝트는 냉장고 내부 재료를 자동으로 인식하고, 사용자 요청에 따라 상황에 맞는 요리와 레시피를 추천하는 스마트 냉장고 시스템을 개발하는 것을 목표로 합니다.
+
+## 📁 프로젝트 구조
+
+```
+2025_HSU_AI_Capstone/
+├── raspberrypi/             # 냉장고 문 닫힘 감지 → 이미지 캡처 및 전송 (Logitech C270 + 압력센서)
+├── AI_capstone/             # GPU 서버 : YOLOv8 + SAM을 통한 식재료 감지 및 JSON 결과 생성
+│   ├── detector.py          # 추론 수행 및 마스크 이미지 Cloudinary 업로드
+│   ├── infer_loop.py        # 이미지 폴더 감시 후 자동 추론 실행
+│   └── sender.py            # Flask 서버로 결과 전송
+├── server/                  # Flask 서버 : 감지 결과 저장 및 CSV 자동 갱신, 레시피 생성 기능 포함
+│   ├── csv_updater.py       # 감지된 식재료 기반 fooddataset.csv 자동 생성
+│   └── recipe_model.py      # GPT + Chroma 기반 레시피 생성
+├── dev/frontend/            # 사용자 웹 UI (React) : 요청 입력 및 요리 결과 시각화
+├── dev/backend/             # FastAPI 서버 : 사용자 요청 처리 및 DB 저장
+└── README.md                # 프로젝트 설명서
+```
+
+## 💡 주요 기능
+
+- **냉장고 내 재료 자동 감지** : 냉장고 문이 닫히면 카메라가 사진을 찍고, 서버로 전송되어 YOLO + SAM이 재료를 감지합니다.
+- **식재료 기반 CSV 자동 갱신** : 감지된 식재료 정보를 기반으로 `fooddataset.csv` 파일이 자동으로 업데이트됩니다.
+- **사용자 요청 기반 요리 추천** : “단백질 많은 음식”, “매운 음식 먹고 싶어” 같은 자연어 요청을 분석해, 현재 보유 재료에 기반한 요리를 추천합니다.
+- **GPT 기반 조리법 생성** : GPT와 벡터 검색 기반의 RAG 기법으로 조리법을 생성하고, 각 조리 단계를 이미지(Storyboard)로 시각화합니다.
+- **Cloudinary 연동** : 감지 이미지, 마스크, 요리 과정 이미지 등 모든 시각 자료를 Cloudinary에 자동 업로드합니다.
+
+## 🛠️ 설치 및 실행 방법
+
+### 1. Raspberry Pi에서 카메라 제어
+
+```bash
+cd raspberrypi/
+
+# 가상환경 설정
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# 사진 촬영 및 서버 전송 실행
+python capture_and_send.py
+```
+
+### 2. GPU 서버에서 YOLO + SAM 추론 자동화
+
+```bash
+cd AI_capstone/
+source venv/bin/activate
+
+# YOLO + SAM 추론 자동 루프
+python infer_loop.py
+```
+
+### 3. Flask 서버 실행 (레시피 및 감지 결과 처리)
+
+```bash
+cd server/
+export FLASK_APP=server.py
+flask run --host=0.0.0.0 --port=5000
+```
+
+### 4. 프론트엔드 실행
+
+```bash
+cd dev/frontend/
+npm install
+npm start
+```
+
+⚠️ 모든 장치는 동일한 Wi-Fi 네트워크에 있어야 통신이 원활합니다.
+
+## 📊 데이터 예시 (fooddataset.csv)
+
+| 날짜 및 시간         | 재료 이름 | 유통기한 | 탄수화물 (%) | 단백질 (%) | 지방 (%) |
+|----------------------|-----------|----------|--------------|------------|----------|
+| 2025-05-29 21:00:00  | 감자      | 2025-06-10 | 17.3         | 2.0        | 0.1      |
+| 2025-05-29 21:00:00  | 마늘      | 2025-06-20 | 33.1         | 6.4        | 0.5      |
+
+## 🖼️ 요리 결과 예시
+
+사용자 입력: **"단백질 많은 요리 먹고싶어"**
+
+추천 요리: **닭가슴살 샐러드**  
+- 조리법 단계별 설명 + 이미지 (Cloudinary 링크 포함)
+- 사용 재료: 닭가슴살, 양상추, 마늘, 올리브유
+
+## 👥 팀원 소개
+
+| 이름   | 역할                                         |
+|--------|----------------------------------------------|
+| 허현준 | YOLO + SAM 추론 서버 구축 및 fooddataset.csv 자동화 |
+| 이현승 | Flask 서버 구축, 감지 결과 처리, 레시피 추천 파이프라인 |
+| 이나은 | 프론트엔드 UI 및 사용자 요청 처리, GPT 연동 |
+
+## 📄 라이선스
+
+본 프로젝트는 MIT 라이선스를 따릅니다. 자세한 내용은 `LICENSE` 파일을 참고하세요.
