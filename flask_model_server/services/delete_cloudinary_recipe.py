@@ -5,7 +5,9 @@ import os
 from dotenv import load_dotenv
 
 # .env 파일 불러오기
-load_dotenv()
+# services/cloudinary_uploader.py → 상위 디렉토리의 .env 파일 로드
+dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
+load_dotenv(dotenv_path)
 
 cloudinary.config(
     cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
