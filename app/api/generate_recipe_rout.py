@@ -74,7 +74,7 @@ def generate_recipe_from_detected(payload: RecipeRequest,db: Session = Depends(g
 
         #  Flask 모델 서버로 요청 보내기
         try:
-            flask_url = "/api/generate" #다른 노트북 서버로 변경경
+            flask_url = "https://4083-223-194-159-129.ngrok-free.app/api/generate" #다른 노트북 서버로 변경경
             payload = {
                 "user_input": user_input,
                 "ingredients": ingredient_names

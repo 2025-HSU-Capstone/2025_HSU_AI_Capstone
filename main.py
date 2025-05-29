@@ -23,7 +23,7 @@ from starlette.responses import FileResponse
 
 from app.api.generate_recipe_rout import router as generate_recipe_router
 from app.api.bbox_recipe_rout import router as bbox_recipe_router
-from app.api.trigger_router import router as trigger_router
+# from app.api.trigger_router import router as trigger_router
 from app.api.bbox_router import router as bbox_router
 from app.api.mask_router import router as mask_router
 from app.api.trigger import router as trigger
@@ -73,7 +73,7 @@ app.mount(
 app.include_router(generate_recipe_router)
 app.include_router(bbox_router)
 app.include_router(bbox_recipe_router)
-app.include_router(trigger_router)
+#app.include_router(trigger_router)
 app.include_router(mask_router)
 app.include_router(trigger)
 
@@ -112,3 +112,4 @@ def read_root():
 
 # 실험할 때마다 삭제 삭제 안 해도 되는 테이블들
 #:FoodLog FridgeImage DetectedBBox
+# uvicorn main:app --host 0.0.0.0 --port 8000
