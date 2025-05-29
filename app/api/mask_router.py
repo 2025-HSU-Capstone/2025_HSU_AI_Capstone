@@ -14,9 +14,13 @@ def get_segmentation_masks(db: Session = Depends(get_db)):
         return {"masks": []}
     # 해당 image_id에 연결된 detected_masks 테이블의 데이터를 조회
     masks = db.query(DetectedMask).filter(DetectedMask.image_id == latest_image.id).all()
+    
+    
     # 각 마스크에 대해 name(재료 이름)과 mask_url(Cloudinary URL)로 구성된 리스트를 JSON으로 반환
+    CLOUDINARY_BASE = "https://res.cloudinary.com/dawjwfi88/image/upload/smartfridge/captured_images"
+    
     return {
-        "image_filename": latest_image.filename,
+        "image_filename":f"{CLOUDINARY_BASE}/{latest_image.filename}",
         "masks": [
             {
                 "name": mask.name,
