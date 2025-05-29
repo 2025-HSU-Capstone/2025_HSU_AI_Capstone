@@ -8,17 +8,12 @@
 
 ```
 2025_HSU_AI_Capstone/
-├── raspberrypi/             # 냉장고 문 닫힘 감지 → 이미지 캡처 및 전송 (Logitech C270 + 압력센서)
-├── AI_capstone/             # GPU 서버 : YOLOv8 + SAM을 통한 식재료 감지 및 JSON 결과 생성
-│   ├── detector.py          # 추론 수행 및 마스크 이미지 Cloudinary 업로드
-│   ├── infer_loop.py        # 이미지 폴더 감시 후 자동 추론 실행
-│   └── sender.py            # Flask 서버로 결과 전송
-├── server/                  # Flask 서버 : 감지 결과 저장 및 CSV 자동 갱신, 레시피 생성 기능 포함
-│   ├── csv_updater.py       # 감지된 식재료 기반 fooddataset.csv 자동 생성
-│   └── recipe_model.py      # GPT + Chroma 기반 레시피 생성
-├── dev/frontend/            # 사용자 웹 UI (React) : 요청 입력 및 요리 결과 시각화
-├── dev/backend/             # FastAPI 서버 : 사용자 요청 처리 및 DB 저장
-└── README.md                # 프로젝트 설명서
+├── gpu_server/             # YOLOv8 + SAM을 통한 식재료 감지 및 JSON 결과 생성
+├── flask_model_server/     # 데이터 처리 목적 flask 서버
+├── dev/frontend            # 사용자 UI를 위한 웹 페이지
+├── dev/backend             # 식재료 정보 및 이미지 저장을 위한 DB
+├── generateRecipeImage     # 식재료 정보와 사용자 요청을 처리하여 RAG 기반 조리법 이미지 생성
+└── README.md               # 프로젝트 설명서
 ```
 
 ## 💡 주요 기능
