@@ -31,12 +31,18 @@ function FridgeSegOverlay() {
       .then((res) => res.json())
       .then(async (data) => {
         console.log("📷 이미지 URL 확인:", data.image_filename);
+        
+        if (!data.image_filename) {
+        console.warn("⚠️ image_filename이 비어 있음");
+        return;
+      }
 
-        setBaseImageUrl(
-          data.image_filename.startsWith("http")
-            ? data.image_filename
-            : `http://localhost:8000/images/${data.image_filename}`
-        );
+      const fullUrl = data.image_filename.startsWith("http")
+        ? data.image_filename
+        : `http://localhost:8000/images/${data.image_filename}`;
+
+      console.log("🧊 최종 이미지 URL:", fullUrl); // 여기서 잘못되었는지 확인
+        setBaseImageUrl(data.image_filename); // 조건문 필요 없음
 
         const loaded = await Promise.all(
           data.masks.map(
@@ -44,7 +50,7 @@ function FridgeSegOverlay() {
               new Promise((resolve) => {
                 const img = new Image();
                 img.crossOrigin = "anonymous";
-                img.src = encodeURI(item.mask_url);
+                img.src = item.mask_url;
                 img.onload = () => resolve({ name: item.name, image: img });
               })
           )
@@ -120,7 +126,7 @@ function FridgeSegOverlay() {
     <div style={{ 
       position: "relative", 
       width: "1280px", 
-      eight: "480px"}}
+      height: "480px"}}
     >
       <img
         src={baseImageUrl}
@@ -129,7 +135,11 @@ function FridgeSegOverlay() {
           const img = e.target;
           const width = img.naturalWidth;
           const height = img.naturalHeight;
+          console.log("✅ 이미지 로드 성공:", baseImageUrl, width, height); // 디버깅용
           setImageSize({ width, height });  // useState로 관리 필요
+        }}
+        onError={(e) => {
+          console.error("❌ 이미지 로드 실패:", baseImageUrl); // 💥 실패 시 로그
         }}
         style={{ display: "block" }}
         width={imageSize.width}

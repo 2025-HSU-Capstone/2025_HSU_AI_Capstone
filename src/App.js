@@ -3,7 +3,6 @@ import "./App.css";
 import React, { useState } from "react";
 import RecipeStoryboard from "./components/RecipeStoryboard";
 import BBoxViewer from "./components/BBoxViewer";
-import FridgeEditor from "./components/FridgeEditor";
 import FridgeSegOverlay from "./components/FridgeSegOverlay";
 
 function App() {
@@ -76,7 +75,7 @@ function App() {
         </section>
       </main>
       {/* ⬇ 여기 추가 */}
-      <FridgeEditor />
+      
 
       <section className="seg-panel">
       <h2>🧪 SAM 기반 재료 감지</h2>
