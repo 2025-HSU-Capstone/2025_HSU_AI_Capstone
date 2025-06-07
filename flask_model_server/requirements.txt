@@ -1,5 +1,9 @@
+flask
 openai
 chromadb
-pandas
 sentence-transformers
-
+pandas
+Pillow
+tqdm
+cloudinary
+python-dotenv

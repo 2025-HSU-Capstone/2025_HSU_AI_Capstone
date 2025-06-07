@@ -25,6 +25,7 @@ def generate_recipe():
         print("❌ Flask /generate 예외 발생:")
         traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
     # if user_input == "단백질 많은 레시피 추천해줘":
     #     return jsonify({
     #         "title": "단백질 폭탄 오믈렛",

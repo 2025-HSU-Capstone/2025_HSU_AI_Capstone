@@ -1,4 +1,3 @@
-import sys, os
 
 import re
 import json
@@ -13,6 +12,10 @@ from services.cloudinary_uploader import upload_to_cloudinary_from_bytes  # 상�
 
 import time
 import openai
+from dotenv import load_dotenv
+import os
+from openai import OpenAI
+
 # 실제 레시피 생성 로직을 담당하는 함수 정의 파일
 
 # 사용자 요청에서 조건 추출 (요리 종류, 포함/제외 조건 등)
@@ -20,7 +23,9 @@ import openai
 # 최종 레시피 생성 및 각 조리 단계 이미지 생성 (GPT로 프롬프트 작성 → 이미지 생성 → Cloudinary에 업로드)
 
 # OpenAI API 키
-client = OpenAI(api_key="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")
+load_dotenv()
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def generate_recipe_from_request(user_input: dict):
     user_request = user_input.get("user_input", "")
@@ -148,7 +153,7 @@ def generate_recipe_from_request(user_input: dict):
 
     # ✅ 이미지 저장 위치: FastAPI 쪽 outputs 이미지 생성성
     step_outputs = []
-    for idx, step in enumerate(steps[:2], 1):
+    for idx, step in enumerate(steps, 1):
         image_prompt = f"""
 당신은 요리 일러스트를 그리는 전문가입니다.
 아래 조리 과정을 만화 스타일로 그려주세요:
