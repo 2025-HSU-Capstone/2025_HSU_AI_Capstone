@@ -1,3 +1,4 @@
+
 import re
 import json
 import base64
@@ -7,24 +8,30 @@ from PIL import Image
 from openai import OpenAI
 import chromadb
 from chromadb.utils import embedding_functions
-from services.cloudinary_uploader import upload_to_cloudinary_from_bytes
+from services.cloudinary_uploader import upload_to_cloudinary_from_bytes  # 상대경로에 맞게 조정
 
 import time
 import openai
 from dotenv import load_dotenv
 import os
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
+from openai import OpenAI
 
+# 실제 레시피 생성 로직을 담당하는 함수 정의 파일
+
+# 사용자 요청에서 조건 추출 (요리 종류, 포함/제외 조건 등)
+# 유사 레시피 검색 (ChromaDB 사용)
+# 최종 레시피 생성 및 각 조리 단계 이미지 생성 (GPT로 프롬프트 작성 → 이미지 생성 → Cloudinary에 업로드)
+
+# OpenAI API 키
 load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-executor = ThreadPoolExecutor()
 
 def generate_recipe_from_request(user_input: dict):
     user_request = user_input.get("user_input", "")
     detected_ingredients = user_input.get("ingredients", [])
 
+    # fooddataset.csv 기반 조건 추출
     food_df = pd.read_csv("data/fooddataset.csv")
     food_df.columns = food_df.columns.str.strip().str.replace(" ", "")
 
@@ -51,7 +58,7 @@ def generate_recipe_from_request(user_input: dict):
 """
     print("🧠 GPT 호출: 조건 추출 시작")
     print("✅ 생성된 prompt:\n", prompt)
-    response = None
+    response = None  # 루프 시작 전에 선언
 
     for i in range(3):
         try:
@@ -64,16 +71,16 @@ def generate_recipe_from_request(user_input: dict):
                 temperature=0
             )
             break
-        except openai.RateLimitError:
+        except openai.RateLimitError as e:
             print(f"⚠️ 요청 제한: 재시도 {i + 1}/3")
             time.sleep(2)
         except Exception as e:
             print("❌ 기타 에러 발생:", e)
             break
-
+    # 이후 접근 가능
     if response is None:
         return {"error": "GPT 응답 없음"}
-
+    
     raw_json = response.choices[0].message.content.strip()
     if raw_json.startswith("```json"):
         raw_json = "\n".join(raw_json.strip().split("\n")[1:-1])
@@ -83,6 +90,7 @@ def generate_recipe_from_request(user_input: dict):
     nutrients = conditions.get("nutrients", [])
     ingredients_list = detected_ingredients
 
+    # Chroma 검색
     chroma_client = chromadb.PersistentClient(path="db/chroma")
     collection = chroma_client.get_collection(name="recipes")
     query_text = ", ".join(ingredients_list + types + nutrients)
@@ -90,6 +98,7 @@ def generate_recipe_from_request(user_input: dict):
     rag_docs = rag_results.get("documents", [[]])[0]
     context = "\n\n".join(rag_docs)
 
+    # 레시피 생성 프롬프트
     recipe_prompt = f"""
 🍽️ [사용자 요청 요약]
 - 요청 문장: {user_request}
@@ -102,21 +111,32 @@ def generate_recipe_from_request(user_input: dict):
 {', '.join(ingredients_list)}
 
 📚 [AI가 검색한 유사 레시피 목록]
+아래는 다양한 요리 아이디어를 위한 참고용 레시피입니다.  
+이 목록은 단지 힌트이며, 아래 내용 자체를 복사하거나 그대로 따라하지 마세요.  
+**사용자 요청 조건에 가장 적합한 요리를 새롭게 구성해 주세요.**
+
 {context}
 
 🧑‍🍳 [요리 생성 지침]
-- 조건을 반영해 하나의 요리를 추천
-- 하나의 스텝에는 최대한 한 가지 행동만 포함되도록 세분화 
-- 스텝은 10개 이하로만 작성, 대신 최소한으로 비슷한 행동은 한 스텝에 묶기, 이미지도 그렇게 그리기
-- 단계는 짧고 명확하게 작성
+- 반드시 '요청 요약'의 조건을 최우선으로 반영해주세요.
+- 모든 재료를 쓸 필요는 없습니다.
+- 유사 레시피는 창의적인 영감을 위한 참고용입니다. 복사하지 말고 새로운 조합을 만들어주세요.
+- 대중적인 조리법을 이용해서 만들 수 있는 요리를 우선으로 추천해주세요.
+- 실제 조리 상식에 어긋나지 않는 조리 방법으로 요리를 할 수 있도록 출력해주세요.
+- 현실적으로 만들 수 있는 단 하나의 요리를 출력해주세요.
+- 조리법의 각 단계(step)는 하나의 동작만 포함하도록 짧게 나눠주세요.
+  예: '채소를 씻고 자르고 볶는다' → '1. 채소를 씻는다 2. 채소를 자른다 3. 채소를 볶는다'
 
 📄 출력 형식:
 [요리 제안: OO]
 [재료]
 - 항목1
+- 항목2
 ...
+
 [조리법]
 1. ...
+2. ...
 """
     print("🍳 GPT 호출: 레시피 생성 시작")
     res = client.chat.completions.create(
@@ -131,36 +151,10 @@ def generate_recipe_from_request(user_input: dict):
     name, steps_raw = matches[0]
     steps = re.findall(r"\d+[.]\s*(.+)", steps_raw.strip())
 
-    # 🔽 여기 추가
-    print(f"🧮 GPT가 생성한 총 조리 스텝 수: {len(steps)}")
-    for i, s in enumerate(steps, 1):
-        print(f"🔹 Step {i}: {s}")
-
-    title_translation = client.chat.completions.create(
-        model="gpt-4o",
-        messages=[
-            {
-                "role": "system",
-                "content": "한글 요리 제목을 영문 파일명으로 간단히 번역하고 공백은 언더바로 바꿔줘."
-            },
-            {"role": "user", "content": name}
-        ],
-        temperature=0
-    )
-    safe_title = title_translation.choices[0].message.content.strip()
-    safe_title = re.sub(r"\s+", "_", safe_title)
-    safe_title = re.sub(r"[^a-zA-Z0-9_]", "", safe_title)
-
-    semaphore = asyncio.Semaphore(3)
-
-    async def process_step(step, idx):
-        async with semaphore:
-            await asyncio.sleep(idx * 1.8)
-            loop = asyncio.get_event_loop()
-
-        def generate_and_upload():
-            try:
-                image_prompt = f"""
+    # ✅ 이미지 저장 위치: FastAPI 쪽 outputs 이미지 생성성
+    step_outputs = []
+    for idx, step in enumerate(steps, 1):
+        image_prompt = f"""
 당신은 요리 일러스트를 그리는 전문가입니다.
 아래 조리 과정을 만화 스타일로 그려주세요:
 
@@ -170,52 +164,65 @@ def generate_recipe_from_request(user_input: dict):
 - 인물은 생략, 손만 등장
 - 조금 더 현실적인 느낌으로 사진과 같은 그림
 """
-                image_res = None
-                for attempt in range(3):  # 최대 3회 재시도
-                    try:
-                        image_res = client.images.generate(
-                            model="gpt-image-1",
-                            prompt=image_prompt.strip(),
-                            size="1024x1024",
-                            n=1
-                        )
-                        break  # 성공하면 탈출
-                    except openai.RateLimitError as e:
-                        print(f"⚠️ step {idx} 재시도 {attempt+1}회, {idx *1.2}초 대기 중...")
-                        time.sleep(3)
+        try:
+            print(f"🖼️ 이미지 생성 요청: step {idx}")
+            image_res = client.images.generate(
+                model="gpt-image-1",
+                prompt=image_prompt.strip(),
+                size="1024x1024",
+                n=1
+            )
+            image_data = base64.b64decode(image_res.data[0].b64_json)
+            image = Image.open(io.BytesIO(image_data))
 
-                if image_res is None:
-                    raise Exception("이미지 생성 실패: 재시도 2회 후 중단")
+            # ✅ 영문 파일명 변환
+            # OpenAI로 이름 번역
+            title_translation = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "한글 요리 제목을 영문 파일명으로 간단히 번역하고 공백은 언더바로 바꿔줘. 예: '단백질 가득 에그' → 'protein_scramble_egg'"
+                    },
+                    {
+                        "role": "user",
+                        "content": name
+                    }
+                ],
+                temperature=0
+            )
+            safe_title = title_translation.choices[0].message.content.strip()
+            safe_title = re.sub(r"\s+", "_", safe_title)
+            safe_title = re.sub(r"[^a-zA-Z0-9_]", "", safe_title)
 
-                image_data = base64.b64decode(image_res.data[0].b64_json)
-                image = Image.open(io.BytesIO(image_data))
+            # ✅ 여기부터 Cloudinary 업로드
+            public_id = f"smartfridge/recipe_images/{safe_title}_step{idx}"
+            print(f"☁️ Cloudinary 업로드 대상 ID: {public_id}")
 
-                public_id = f"smartfridge/recipe_images/{safe_title}_step{idx}"
+            try:
                 cloudinary_url = upload_to_cloudinary_from_bytes(image, public_id)
-
-                print(f"📛 Step {idx} 업로드 성공 → public_id: {public_id}")
-
-                return {
-                    "step": idx,
-                    "text": step,
-                    "image_url": cloudinary_url
-                }
-
+                print(f"✅ Cloudinary 업로드 성공: {cloudinary_url}")
             except Exception as e:
-                print(f"❌ step {idx} 실패: {e}")
-                return {
-                    "step": idx,
-                    "text": step,
-                    "image_url": f"❌ 실패: {e}"
-                }
+                print("❌ Cloudinary 업로드 실패:", e)
+                cloudinary_url = f"❌ 업로드 실패: {e}"
 
-        return await loop.run_in_executor(executor, generate_and_upload)
+            # ✅ 프론트에 넘길 이미지 URL 구성
+            step_outputs.append({
+                "step": idx,
+                "text": step,
+                "image_url": cloudinary_url
+            })
 
-    tasks = [process_step(step, idx) for idx, step in enumerate(steps, 1)]
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    step_outputs = loop.run_until_complete(asyncio.gather(*tasks))
-    loop.close()
+        except Exception as e:
+            step_outputs.append({
+                "text": step,
+                "image_url": f"❌ 이미지 생성 실패: {e}"
+            })
+
+        print("📂 Cloudinary에 업로드된 이미지 목록:")
+        for s in step_outputs:
+            print(f" - Step {s['step']}: {s['image_url']}")
+
 
     return {
         "title": name,
