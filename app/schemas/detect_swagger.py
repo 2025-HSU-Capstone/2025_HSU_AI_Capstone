@@ -33,6 +33,12 @@ class DetectRequest(BaseModel):
 
 
 #요청 바디(json)을 파이선 객체로 바꿔줘야하는데 그걸 자동으로 구조화해주는 Pydantic의 BaseModel 클래스
+class UserInput(BaseModel):
+    goal: str
+    dietary_preference: str
+    cooking_time: str
+
 class RecipeRequest(BaseModel):
-    user_input: str 
+    user_input: UserInput
+
 

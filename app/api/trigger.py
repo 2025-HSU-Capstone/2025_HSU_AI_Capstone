@@ -11,6 +11,7 @@ from app.db.database import get_db
 import requests
 from pathlib import Path
 
+# 이걸 모델 서버가 호출하면 된다.
 router = APIRouter()
 
 print("trigger_router.py 불러와짐")
@@ -125,6 +126,7 @@ def update_db(payload: DetectRequest, db: Session) -> dict:
     # 어느 재료가 새로 생겼고, 어느 것이 없어진 것이고, 어느 것은 그대로 있었는지 알림
     return {"added": list(to_add), "removed": list(to_remove), "updated": list(to_keep)}
 
+# 이걸 모델 서버가 호출하면 된다.
 @router.post("/detect")
 def detect_from_model(payload: DetectRequest, db: Session = Depends(get_db)):
     return update_db(payload, db)

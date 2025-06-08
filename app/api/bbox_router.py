@@ -8,6 +8,7 @@ from app.models.db_tables import DetectedBBox, FridgeImage
 
 router = APIRouter()
 
+#  가장 최신 레시피를 DB에서 가져오고 -> 그 레시피의 재료 목록으로 BBox 필터를 함
 # 최신 냉장고 이미지에 대한 bbox 목록을 반환
 @router.get("/fridge/bbox", operation_id="get_current_bbox")
 def get_current_fridge_bboxes(db: Session = Depends(get_db)):

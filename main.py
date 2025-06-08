@@ -112,4 +112,4 @@ def read_root():
 
 # 실험할 때마다 삭제 삭제 안 해도 되는 테이블들
 #:FoodLog FridgeImage DetectedBBox
-# uvicorn main:app --host 0.0.0.0 --port 8000
+# uvicorn main:app --host 0.0.0.0 --port 8000 --timeout-keep-alive 180
