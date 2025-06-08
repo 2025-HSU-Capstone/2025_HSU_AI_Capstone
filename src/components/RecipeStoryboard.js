@@ -1,40 +1,36 @@
 // src/components/RecipeStoryboard.jsx
 import React from "react";
-import "./RecipeStoryboard.css";
+import "./RecipeStoryboard.css"; // 스타일이 있다면 유지
 
 function RecipeStoryboard({ recipe }) {
-  if (!recipe) return null;
+  if (!recipe) {
+    return <div className="storyboard-container">여기에 생성된 레시피가 표시됩니다.</div>;
+  }
 
   return (
-    <div className="storyboard">
-      <h2 className="recipe-title">{recipe.title}</h2>
-      <p className="ingredients">
-        <strong>재료:</strong> {recipe.ingredients?.join(", ")}
-      </p>
+    <div className="storyboard-container">
+      <h2>{recipe.title}</h2>
 
-      <div className="all-steps">
-        {recipe.steps.map((step) => (
-          <div key={step.step} className="step-card">
-            {step.image_url ? (
-              <img
-                src={
-                  step.image_url.startsWith("http")
-                    ? step.image_url
-                    : `http://localhost:8000${step.image_url}?v=${step.step}`
-                }
-                alt={`Step ${step.step}`}
-                onError={() =>
-                  console.error("❌ 이미지 로딩 실패:", step.image_url)
-                }
-              />
-            ) : (
-              <div className="image-placeholder">이미지 없음</div>
-            )}
-            <p className="step-number">{`Step ${step.step}`}</p>
-            <p className="step-text">{step.text || "설명 없음"}</p>
-          </div>
+      <h3>📋 재료</h3>
+      <ul>
+        {recipe.ingredients.map((item, i) => (
+          <li key={i}>{item}</li>
         ))}
-      </div>
+      </ul>
+
+      <h3>🍳 조리 순서</h3>
+      {recipe.steps.map((step, i) => (
+        <div key={i} style={{ marginBottom: "1rem" }}>
+          <strong>{step.step}단계:</strong> {step.text}
+          <br />
+          <img
+            src={step.image_url}
+            alt={`step${step.step}`}
+            width="300"
+            style={{ marginTop: "0.5rem", borderRadius: "8px" }}
+          />
+        </div>
+      ))}
     </div>
   );
 }

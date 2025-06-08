@@ -16,14 +16,14 @@ function nameToColor(name) {
 }
 
 
-function FridgeSegOverlay() {
+function FridgeSegOverlay({ userInput, setUserInput }) {
   const [baseImageUrl, setBaseImageUrl] = useState("");
   const [masks, setMasks] = useState([]); // { name, image }
   const [hovered, setHovered] = useState(null);
   const [selected, setSelected] = useState(null);
   const canvasRef = useRef(null);
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
-
+  
 
   // ✅ API 요청: 최신 이미지 + 마스크 불러오기
   useEffect(() => {
@@ -119,6 +119,10 @@ function FridgeSegOverlay() {
   const handleClick = () => {
     if (hovered) {
       setSelected(hovered);
+      setUserInput((prev) => {
+        if (prev.includes(hovered)) return prev;  // 중복 방지
+        return prev ? `${prev}, ${hovered}` : hovered;
+      });
     }
   };
 
